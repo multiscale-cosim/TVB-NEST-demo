@@ -8,7 +8,7 @@ It's a demonstration of a work underdevelopment: https://github.com/multiscale-c
 
 ## Table of Contents
 1. [Installation](#installation)
-2. [Example](#installation)
+2. [Example](#example)
 3. [Files](#files)
 
 ## Installation and update :<a name="installalation"></a>
