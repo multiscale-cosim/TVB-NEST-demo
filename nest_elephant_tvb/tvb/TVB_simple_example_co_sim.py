@@ -74,7 +74,7 @@ def run_example(co_simulation, path, time_synch=0.1, simtime=1000.0, level_log=1
     plt.figure(1)
     plt.plot(RAW[0], RAW[1][:, 0, :, 0] + 3.0)
     plt.title("Raw -- State variable 0")
-    plt.savefig(path+"/figures/plot_tvb.png")
+    plt.savefig(path+"/figures/plot_tvb.svg")
 
 
 if __name__ == "__main__":

@@ -93,7 +93,7 @@ def run_example(co_simulation, path, time_synch=0.1, simtime=1000.0, level_log=1
     logger.info("plot the result")
     if nest.Rank() == 0:
         nest.raster_plot.from_data(get_data(path + '/nest/'))
-        plt.savefig(path + "/figures/plot_nest.png")
+        plt.savefig(path + "/figures/plot_nest.svg")
 
 
 if __name__ == "__main__":

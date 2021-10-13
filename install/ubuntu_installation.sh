@@ -1,6 +1,6 @@
 #!/bin/bash
 
-INSTALLATION_FOLDER=/home/kusch/Documents/project/co_simulation/Demonstration/venv/
+INSTALLATION_FOLDER=/home/kusch/Documents/project/co_simulation/TVB-NEST-demo/venv/
 
 # install MPI
 mkdir $INSTALLATION_FOLDER/tmp
