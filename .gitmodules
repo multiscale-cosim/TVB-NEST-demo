@@ -1,0 +1,3 @@
+[submodule "nrn"]
+	path = nrn
+	url = https://github.com/lionelkusch/nrn.git
