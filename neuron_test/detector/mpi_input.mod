@@ -15,43 +15,52 @@ PARAMETER {
 
 ASSIGNED {
 nb_spikes
+id
 }
 
 VERBATIM
 #include <mpi.h>
 #include <string.h>
 #include <stdbool.h>
-MPI_Comm comm;
+static MPI_Comm comm;
+static int count_id = 1;
 ENDVERBATIM
 INITIAL {
 	net_send(0, 3)
+	VERBATIM
+	if (id == 0 ){
+		id = count_id;
+		count_id +=1;
+	}
+	ENDVERBATIM
 }
 
 DESTRUCTOR {
 		VERBATIM
-		printf("########################################  network receive mpi destructor \n");
-		bool value[ 1 ] = { true };
-		MPI_Send( value, 1, MPI_CXX_BOOL, 0, 2, comm );
-      	MPI_Barrier(comm);
-      	MPI_Comm_disconnect( &comm );
+    	if (id == 1){
+			bool value[ 1 ] = { true };
+			MPI_Send( value, 1, MPI_CXX_BOOL, 0, 0, comm );
+			MPI_Barrier(comm);
+			MPI_Comm_disconnect( &comm );
+    	}
 		ENDVERBATIM
 }
 
 VERBATIM
 double spikes_time[100];
 static int get_spikes(_threadargsprotocomma_ double _lt) {
-	printf("########################################  network get spike %f\n",_lt);
+	// printf("########################################  network get spike %f %d\n",_lt,(int)id);
 	bool value[ 1 ] = { true };
-	MPI_Send( value, 1, MPI_CXX_BOOL, 0, 0, comm );
+	MPI_Send( value, 1, MPI_CXX_BOOL, 0, (int)id, comm );
 	// Receive the size of data
     MPI_Status status_mpi;
 	// Receive the size of the data in total and for each devices
 	int value_int [1] = {0};
-    MPI_Recv( value_int, 1 , MPI_INT, MPI_ANY_SOURCE, 0, comm, &status_mpi );
+    MPI_Recv( value_int, 1 , MPI_INT, MPI_ANY_SOURCE, (int)id, comm, &status_mpi );
 	nb_spikes = value_int[0];
-	printf("########################################  network size %f %d \n",nb_spikes,value_int[0]);
+	// printf("########################################  network size %f %d \n",nb_spikes,value_int[0]);
     // Receive the data
-    MPI_Recv( spikes_time, nb_spikes, MPI_DOUBLE, status_mpi.MPI_SOURCE, 0, comm, &status_mpi );
+    MPI_Recv( spikes_time, nb_spikes, MPI_DOUBLE, status_mpi.MPI_SOURCE, (int)id, comm, &status_mpi );
 }
 ENDVERBATIM
 
@@ -70,7 +79,7 @@ NET_RECEIVE (w) {
 			VERBATIM
 			_la = spikes_time[(int)_li];
 			ENDVERBATIM
-			printf("########################################  network send %f \n",a)
+			:printf("########################################  network send %f \n",a)
 			net_event(a)
 			net_send(a, 1)
 			i = i + 1
@@ -102,7 +111,7 @@ void get_port(char* path, char* port_name )
 	}
 
 void preparation_MPI(){
-
+	printf("preparation MPI \n");
     // Create the connection with MPI
     // 1) take all the ports of the connections
     // get port and update the list of device only for master
@@ -119,6 +128,14 @@ ENDVERBATIM
 
 FUNCTION set_path(){
 VERBATIM
+	if (id == 0 ){
+		id = count_id;
+		count_id +=1;
+	}
+	if (id != 1){
+		//printf("################ not path _id %d  ",(int)id);
+		return _lset_path;
+	}
 	path = hoc_gargstr(1);
 	printf("path %s",path);
 ENDVERBATIM

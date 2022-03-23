@@ -9,13 +9,12 @@ load_mechanisms(os.path.dirname(__file__)+'./detector/')
 h.nrnmpi_init()
 # define dt for the simulation
 h.dt = 0.1
-print("############### dt",h.dt); sys.stdout.flush()
+print("############### dt", h.dt); sys.stdout.flush()
 pc = h.ParallelContext()
-
 
 class Cell:
     name = "BallAndStick"
-    def __init__(self, gid, x, y, z, theta):
+    def __init__(self, gid, x, y, z, theta, stim_delay, stim_w, path_input, path_output, t_synch=20.0):
         self._gid = gid
         self._setup_morphology()
         self.all = self.soma.wholetree()
@@ -25,13 +24,26 @@ class Cell:
         self._rotate_z(theta)
         self._set_position(x, y, z)
 
-        self._spike_detector = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.soma)
+        self._spike_detector = h.NetCon(self.soma(0.5)._ref_v, None, path_output, t_synch, sec=self.soma)
         self.spike_times = h.Vector()
         self._spike_detector.record(self.spike_times)
 
         self._ncs = []
 
         self.soma_v = h.Vector().record(self.soma(0.5)._ref_v)
+
+        # Cell 1
+        pc.set_gid2node(self._gid, pc.id())
+        pc.cell(self._gid, self._spike_detector)
+        self._extern_input = h.mpi_input()
+        if self._gid == 0:
+            self._extern_input.set_path(path_input)
+        self._extern_input.time_synch = t_synch
+        self.net_ext = h.NetCon(self._extern_input, pc.gid2cell(self._gid).syn)  ### grab cell with gid==0 wherever it exists
+        self.net_ext.delay = stim_delay
+        self.net_ext.weight[0] = stim_w
+        pc.cell(self._gid, self.net_ext)
+
 
     def __repr__(self):
         return "{}[{}]".format(self.name, self._gid)
@@ -96,12 +108,16 @@ class Ring:
 
     def __init__(
         self,
+        N=2,
         stim_w=0.04,
         stim_t=9,
         stim_delay=1,
         syn_w=0.01,
         syn_delay=25,
         r=50,
+        path_input="",
+        path_output="",
+        t_synch=20.0
     ):
         """
         :param N: Number of cells.
@@ -114,11 +130,12 @@ class Ring:
         """
         self._syn_w = syn_w
         self._syn_delay = syn_delay
-        pc.set_gid2node(pc.id(), pc.id())
         theta = 2 * h.PI
         self.cells = {}
-        self.cells[0] = Cell(0, h.cos(theta) * r, h.sin(theta) * r, 0, theta)
-        pc.cell(self.cells[0]._gid, self.cells[0]._spike_detector)
+        for i in range(N):
+            self.cells[i] = Cell(i, h.cos(theta) * r, h.sin(theta) * r, 0, theta, syn_delay, syn_w,
+                                 path_input, path_output, t_synch=t_synch)
+
         # ## stimulate gid 0
         # if pc.gid_exists(0):
         #     self._netstim = h.NetStim()
@@ -126,21 +143,11 @@ class Ring:
         #     self._netstim.number = 5
         #     self._netstim.start = 0.0
         #     self._nc = h.NetCon(
-        #         self._netstim, pc.gid2cell(pc.id()).syn
+        #         self._netstim, pc.gid2cell(0).syn
         #     )  ### grab cell with gid==0 wherever it exists
         #     self._nc.delay = stim_delay
         #     self._nc.weight[0] = stim_w
-        # self._extern_input = h.NetCon('/home/kusch/Documents/project/co_simulation/TVB-NEST-proof/neuron_test/peth_label',
-        #                               pc.gid2cell(pc.id()).syn)
-        self._extern_input = h.mpi_input()
-        self._extern_input.set_path("/home/kusch/Documents/project/co_simulation/TVB-NEST-proof/neuron_test/input_port.txt")
-        # self._extern_input.interval()
-        self.net_ext = h.NetCon(
-                self._extern_input, pc.gid2cell(pc.id()).syn #self.cells[0].syn
-            )  ### grab cell with gid==0 wherever it exists
-        self.net_ext.delay = stim_delay
-        self.net_ext.weight[0] = stim_w
-        pc.cell(self.cells[0]._gid, self.net_ext)
+
 
 
 def get_all_spikes(ring):
@@ -183,7 +190,7 @@ def prun(tstop):
     pc.psolve(tstop)
 
 
-def test_bas():
+def test_bas(path_input, path_output, N, t_synch):
     stdspikes = {
         0: [10.925000000099914, 143.3000000001066],
         1: [37.40000000009994, 169.7750000000825],
@@ -196,14 +203,18 @@ def test_bas():
     for gid in stdspikes:
         stdspikes_after_100[gid] = [spk_t for spk_t in stdspikes[gid] if spk_t >= 100.0]
 
-    ring = Ring()
+    ring = Ring(N=N, path_input=path_input, path_output=path_output, t_synch=t_synch)
 
     prun(200 * ms)  # at tstop/2 does a SaveState.save and BBSaveState.save
     stdspikes = get_all_spikes(ring)
     print(stdspikes)
+    pc.barrier()
+    del ring
+    h.quit()
 
 
 if __name__ == "__main__":
-    test_bas()
-    pc.barrier()
-    h.quit()
+    if len(sys.argv) == 5:
+        test_bas(sys.argv[1], sys.argv[2], int(sys.argv[3]), float(sys.argv[4]))
+    else:
+        print('missing argument')
