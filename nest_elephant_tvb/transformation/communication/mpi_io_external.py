@@ -104,4 +104,4 @@ class MPICommunicationExtern:
         # Only one process need to finalise MPI
         if end:
             self.logger.info("MPI IO ext : real finalise")
-            MPI.Finalize()
+            # MPI.Finalize()

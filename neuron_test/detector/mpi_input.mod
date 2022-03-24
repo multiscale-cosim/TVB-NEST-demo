@@ -73,6 +73,7 @@ NET_RECEIVE (w) {
 	}
 	if (flag == 2) {
 		LOCAL a,i
+		:printf("########################################  get spike %f \n",t)
 		get_spikes(t)
 		i = 0
 		while (i < nb_spikes){
@@ -84,6 +85,7 @@ NET_RECEIVE (w) {
 			net_send(a, 1)
 			i = i + 1
 		}
+		:printf("########################################  network send %f %f\n",t,time_synch)
 		net_send(time_synch, 2)
 	}
 	if (flag == 1) {

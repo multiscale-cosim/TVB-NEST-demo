@@ -30,11 +30,11 @@ def input(path, nb_neurons, t_synch):
     check = np.empty(1, dtype='b')
     starting = 1
     while True:
-        for i in range(1,nb_neurons+1):
+        for i in range(1, nb_neurons+1):
             comm.Recv([check, 1, MPI.CXX_BOOL], source=0, tag=MPI.ANY_TAG, status=status_)
             print("INPUT :  start to send"); sys.stdout.flush()
             print("INPUT :  status a tag ", status_.Get_tag()); sys.stdout.flush()
-            tag =  status_.Get_tag()
+            tag = status_.Get_tag()
             if status_.Get_tag() != 0:
                 source = status_.Get_source()
                 print("Input : source is", source); sys.stdout.flush()

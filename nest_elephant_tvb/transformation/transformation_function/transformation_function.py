@@ -57,9 +57,14 @@ class TransformationSpikeRate(AbstractTransformationSpikeRate):
             spikes_neurons[id_neurons - self.first_id].append(time_step)
         for i in range(self.nb_neurons):
             if len(spikes_neurons[i]) != 0:
-                spikes_neurons[i] = SpikeTrain(np.concatenate(spikes_neurons[i]) * ms,
-                                               t_start=np.around(count * self.time_synch, decimals=2),
-                                               t_stop=np.around((count + 1) * self.time_synch, decimals=2) + 0.0001)
+                if len(spikes_neurons[i]) != 1:
+                    spikes_neurons[i] = SpikeTrain(np.concatenate(spikes_neurons[i]) * ms,
+                                                   t_start=np.around(count * self.time_synch, decimals=2)- 0.0001,
+                                                   t_stop=np.around((count + 1) * self.time_synch, decimals=2) + 0.0001)
+                else:
+                    spikes_neurons[i] = SpikeTrain(spikes_neurons[i] * ms,
+                               t_start=np.around(count * self.time_synch, decimals=2)- 0.0001,
+                               t_stop=np.around((count + 1) * self.time_synch, decimals=2) + 0.0001)
             else:
                 spikes_neurons[i] = SpikeTrain(spikes_neurons[i] * ms,
                                                t_start=np.around(count * self.time_synch, decimals=2),
