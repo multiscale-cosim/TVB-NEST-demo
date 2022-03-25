@@ -1,3 +1,6 @@
 [submodule "nrn"]
 	path = nrn
 	url = https://github.com/lionelkusch/nrn.git
+[submodule "neurolib"]
+	path = neurolib
+	url = https://github.com/lionelkusch/neurolib.git
