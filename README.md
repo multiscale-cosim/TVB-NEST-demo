@@ -1,5 +1,9 @@
-# TVB-NEST-demo
-temporary repo for a TVB-NEST demonstrator
+# TVB-NEST-proof-of-concept
+Repository for the proof of concept for generalisation of TVB-NEST
+
+This repository contains the proof of concept for Neuron and Neurolib
+
+WARNING: not updated README
 
 ## Topic
 This repository is a demonstration for the co-simulation between TVB, NEST and Elephant.
