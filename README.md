@@ -13,13 +13,13 @@ It's a demonstration of a work underdevelopment: https://github.com/multiscale-c
 
 ## Installation and update :<a name="installalation"></a>
 For the installation, you should look at the script in the folder install. The docker file is a good example 
-for finding of the missing dependency.<br />
-The ubuntu_installation.sh is an incomplete script for install all the tools.
+of finding of the missing dependency.<br />
+The ubuntu_installation.sh is an incomplete script to install all the tools.
 
 ## Example<a name="example"></a>
-This demonstration is based on example of NEST and TVB. It can help you to develop your own co-simulation 
+This demonstration is based on the example of NEST and TVB. It can help you to develop your own co-simulation 
 but it is not optimized and it can miss some functionalities.<br />
-For running th eexample, run the script nest_elephant_tvb/launcher/run.py
+For running the example, run the script nest_elephant_tvb/launcher/run.py
 
 ## Files<a name="files"></a>
 * install: Documentation of the project
@@ -39,7 +39,7 @@ For running th eexample, run the script nest_elephant_tvb/launcher/run.py
             * Nest_IO: communication with NEST simulator
             * TVB_IO: communication with TVB simulator
         * transformation_function: function for the transformation
-            * abstract_transformation_function.py: Management the communication with the other components of the transformer
+            * abstract_transformation_function.py: Management communication with the other components of the transformer
             * transformation_function.py: implementation of the transformation function
         * nest_to_tvb: launcher of the component of the transformer between NEST to TVB
         * tvb_to_nest: launcher of the component of the transformer between TVB to NEST
