@@ -57,9 +57,19 @@ class TransformationSpikeRate(AbstractTransformationSpikeRate):
             spikes_neurons[id_neurons - self.first_id].append(time_step)
         for i in range(self.nb_neurons):
             if len(spikes_neurons[i]) != 0:
-                spikes_neurons[i] = SpikeTrain(np.concatenate(spikes_neurons[i]) * ms,
-                                               t_start=np.around(count * self.time_synch, decimals=2),
-                                               t_stop=np.around((count + 1) * self.time_synch, decimals=2) + 0.0001)
+                if len(spikes_neurons[i]) != 1:
+                    spikes_neurons[i] = SpikeTrain(np.concatenate(spikes_neurons[i]) * ms,
+                                                   t_start=np.around(count * self.time_synch, decimals=2)- 0.0001,
+                                                   t_stop=np.around((count + 1) * self.time_synch, decimals=2) + 0.0001)
+                else:
+                    time_spike = spikes_neurons[i]
+                    if len(time_spike[0].shape) == 0:
+                        time_spike = np.array([time_spike[0]])
+                    else:
+                        time_spike = time_spike[0]
+                    spikes_neurons[i] = SpikeTrain(time_spike * ms,
+                               t_start=np.around(count * self.time_synch, decimals=2) - 0.0001,
+                               t_stop=np.around((count + 1) * self.time_synch, decimals=2) + 0.0001)
             else:
                 spikes_neurons[i] = SpikeTrain(spikes_neurons[i] * ms,
                                                t_start=np.around(count * self.time_synch, decimals=2),
@@ -92,6 +102,9 @@ class TransformationRateSpike(AbstractTransformationRateSpike):
                               sampling_period=(time_step[1] - time_step[0]) / rate.shape[-1] * ms)
         spike_generate = []
         for i in range(self.nb_spike_generator):
+            values = np.unique(np.around(np.sort(inhomogeneous_poisson_process(signal, as_array=True)), decimals=1))
+            if np.where(values == np.around(time_step[0] + 0.1, decimals=1))[0].shape[0] != 0:
+                values = values[1:]
             # generate individual spike trains
-            spike_generate.append(np.around(np.sort(inhomogeneous_poisson_process(signal, as_array=True)), decimals=1))
+            spike_generate.append(values)
         return spike_generate

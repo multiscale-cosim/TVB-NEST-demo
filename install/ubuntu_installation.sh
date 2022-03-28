@@ -43,7 +43,7 @@ rm nest-simulator-3.0.tar.gz
 mkdir $PATH_NEST_BUILD
 cd $PATH_NEST_BUILD
 cmake -DCMAKE_INSTALL_PREFIX:PATH=$INSTALLATION_FOLDER $NAME_SOURCE_NEST -Dwith-mpi=ON -Dwith-openmp=ON -Dwith-readline=On -Dwith-ltdl=ON -Dwith-python=ON -Dcythonize-pynest=ON
-make
+make -j
 make install
 #make test
 rm -dr $INSTALLATION_FOLDER/tmp
