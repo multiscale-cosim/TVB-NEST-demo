@@ -190,14 +190,15 @@ def prun(tstop):
 
 
 def run_example(co_simulation, path, nb_neurons, time_synch, resolution, simtime, level_log):
+    logger = create_logger(path, 'neuron', level_log)
+    logger.info("wait configure files")
     path_input = path + "/transformation/spike_generator/neuron.txt"
     path_output = path + "/transformation/spike_detector/neuron.txt"
-    while not os.path.exists(path_input + '.unlock'):
-        time.sleep(1)
-    while not os.path.exists(path_output + '.unlock'):
-        time.sleep(1)
-
-    logger = create_logger(path, 'neuron', level_log)
+    if co_simulation:
+        while not os.path.exists(path_input + '.unlock'):
+            time.sleep(1)
+        while not os.path.exists(path_output + '.unlock'):
+            time.sleep(1)
     logger.info("configure kernel")
     h.dt = resolution
     ring = Ring(co_simulation, N=nb_neurons, path_input=path_input, path_output=path_output, t_synch=time_synch)
@@ -217,7 +218,9 @@ def run_example(co_simulation, path, nb_neurons, time_synch, resolution, simtime
                    list(range(len(stdspikes)))
                    )
         logger.info("save plot result")
-        plt.savefig(path + "/figures/plot_neuron.png")
+    else:
+        plt.figure()
+    plt.savefig(path + "/figures/plot_neuron.png")
 
     logger.info("exit")
     pc.barrier()
@@ -229,8 +232,12 @@ if __name__ == "__main__":
         import json
         with open(sys.argv[1]) as f:
             parameters = json.load(f)
-            run_example(parameters['co_simulation'], path=parameters['path'], simtime=parameters['simulation_time'],
-                        level_log=parameters['level_log'], resolution=parameters['resolution'],
-                        time_synch=parameters['time_synchronization'], nb_neurons=parameters['nb_neurons'][0])
+            if parameters['co_simulation']:
+                run_example(parameters['co_simulation'], path=parameters['path'], simtime=parameters['simulation_time'],
+                            level_log=parameters['level_log'], resolution=parameters['resolution'],
+                            time_synch=parameters['time_synchronization'], nb_neurons=parameters['nb_neurons'][0])
+            else:
+                run_example(parameters['co_simulation'], path=parameters['path'], simtime=parameters['simulation_time'],
+                        level_log=parameters['level_log'], resolution=parameters['resolution'], nb_neurons=parameters['nb_neurons'][0], time_synch=0.0)
     else:
         print('missing argument')

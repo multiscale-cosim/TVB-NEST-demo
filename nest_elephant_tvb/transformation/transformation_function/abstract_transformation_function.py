@@ -45,7 +45,7 @@ class AbstractTransformationSpikeRate(MPICommunicationExtern):
         self.logger.info('TRS : begin sim')
         rates = np.zeros((int(self.time_synch / (self.dt - 0.000001)), 1))  # initialisation of the communication with 0
         self.logger.info('TRS : init rates')
-        self.communication_internal.send_time_rate(np.array([0., self.time_synch]), rates)
+        self.communication_internal.send_time_rate(np.array([-self.time_synch, 0.]), rates)
         self.logger.info('TRS : send init')
         count = 0  # counter of the number of run. It can be useful for the transformation function
         while True:
