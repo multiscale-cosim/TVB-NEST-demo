@@ -8,7 +8,7 @@ from nest_elephant_tvb.utils import create_logger
 from nest_elephant_tvb.nest.utils_function import wait_transformation_modules, get_data
 
 
-def configure(simulator, co_simulation, nb_neurons=10000):
+def configure(simulator, co_simulation, nb_neurons=10000, seed=0):
     """
     configure NEST before the simulation
     modify example of https://simulator.simulator.readthedocs.io/en/stable/_downloads/482ad6e1da8dc084323e0a9fe6b2c7d1/brunel_alpha_simulator.py
@@ -17,6 +17,7 @@ def configure(simulator, co_simulation, nb_neurons=10000):
     :param nb_neurons: number of neurons
     :return:
     """
+    nest.SetKernelStatus({'rng_seed': seed})
     # create the neurons and the devices
     neuron_params = {"C_m": 250.0, "tau_m": 20.0, "tau_syn_ex": 0.5, "tau_syn_in": 0.5,
                      "t_ref": 2.0, "E_L": 0.0, "V_reset": 0.0, "V_m": 0.0, "V_th": 20.0}
@@ -55,7 +56,8 @@ def configure(simulator, co_simulation, nb_neurons=10000):
         return espikes, None, None
 
 
-def run_example(co_simulation, path, time_synch=0.1, simtime=1000.0, level_log=1, resolution=0.1, nb_neurons=10000):
+def run_example(co_simulation, path, time_synch=0.1, simtime=1000.0, level_log=1, resolution=0.1, nb_neurons=10000,
+                seed=0):
     """
     run the example for NEST
     :param co_simulation: boolean for checking if the co-simulation is active or not
@@ -76,7 +78,7 @@ def run_example(co_simulation, path, time_synch=0.1, simtime=1000.0, level_log=1
         {"data_path": path + '/nest/', "overwrite_files": True, "print_time": True, "resolution": resolution})
 
     logger.info("configure the network")
-    espikes, input_to_simulator, output_from_simulator = configure(nest, co_simulation, nb_neurons)
+    espikes, input_to_simulator, output_from_simulator = configure(nest, co_simulation, nb_neurons, seed)
 
     logger.info("start the simulation")
     if not co_simulation:
@@ -116,7 +118,8 @@ if __name__ == "__main__":
             parameters['time_synchronization'] = -1
         run_example(parameters['co_simulation'], parameters['path'], simtime=parameters['simulation_time'],
                     level_log=parameters['level_log'], resolution=parameters['resolution'],
-                    time_synch=parameters['time_synchronization'], nb_neurons=parameters['nb_neurons'][0])
-    elif len(sys.argv) == 6:  # run with parameter in command line
+                    time_synch=parameters['time_synchronization'], nb_neurons=parameters['nb_neurons'][0],
+                    seed=parameters['seed'])
+    elif len(sys.argv) == 7:  # run with parameter in command line
         run_example(bool(int(sys.argv[1])), sys.argv[2], time_synch=float(sys.argv[3]),
-                    simtime=float(sys.argv[4]), level_log=int(sys.argv[5]))
+                    simtime=float(sys.argv[4]), level_log=int(sys.argv[5]), seed=int(sys.argv[6]))

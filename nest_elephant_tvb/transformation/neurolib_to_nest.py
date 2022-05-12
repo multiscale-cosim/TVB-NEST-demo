@@ -62,14 +62,14 @@ if __name__ == "__main__":
                                                   str(id_first_spike_detector + i) + ".txt")
                 path_to_files_sends.append(path_to_files_send)
             send_data_to_Nest.run(path_to_files_sends)
-        elif rank == 1:  # communication with TVB
-            receive_data_to_TVB = ConsumerNeurolibData(
+        elif rank == 1:  # communication with Neurolib
+            receive_data_to_Neurolib = ConsumerNeurolibData(
                 'neurolib_to_nest_receiver' + str(id_first_spike_detector), path, level_log,
                 communication_intern=MPICommunication, receiver_rank=2,
                 buffer_r_w=[0, 2])
             path_to_files_receive = [
                 path + "/transformation/receive_from_neurolib/" + str(id_proxy[id_transformer]) + ".txt"]
-            receive_data_to_TVB.run(path_to_files_receive)
+            receive_data_to_Neurolib.run(path_to_files_receive)
         elif rank == 2:  # transformation from rate to spike
             transform_rate_to_spike = TransformationRateSpike(
                 id_transformer, parameters, nb_spike_generator,
@@ -83,8 +83,8 @@ if __name__ == "__main__":
         from threading import Thread
         import numpy as np
 
-        # creation of the object for TVB communication
-        receive_data_to_TVB = ConsumerNeurolibData(
+        # creation of the object for Neurolib communication
+        receive_data_to_Neurolib = ConsumerNeurolibData(
             'neurolib_to_nest_receiver' + str(id_first_spike_detector), path, level_log,
             communication_intern=ThreadCommunication,
             buffer_write_status=np.ones(1) * -2,
@@ -98,9 +98,9 @@ if __name__ == "__main__":
             communication_intern=ThreadCommunication,
             buffer_write_status=np.ones((1, 1), dtype=int) * -2,
             buffer_write_shape=(1000000 * 3, 1),
-            buffer_read=receive_data_to_TVB.communication_internal.buffer_write_data,
-            status_read=receive_data_to_TVB.communication_internal.status_write,
-            lock_read=receive_data_to_TVB.communication_internal.lock_write
+            buffer_read=receive_data_to_Neurolib.communication_internal.buffer_write_data,
+            status_read=receive_data_to_Neurolib.communication_internal.status_write,
+            lock_read=receive_data_to_Neurolib.communication_internal.lock_write
         )
         # creation of the object for Nest communication
         send_data_to_Nest = ProducerDataNest(
@@ -119,7 +119,7 @@ if __name__ == "__main__":
             path_to_files_sends.append(path_to_files_send)
 
         # creation of the threads and run them
-        th_receive = Thread(target=receive_data_to_TVB.run, args=(path_to_files_receive,))
+        th_receive = Thread(target=receive_data_to_Neurolib.run, args=(path_to_files_receive,))
         th_transformation = Thread(target=transform_rate_to_spike.run, args=(None,))
         th_send = Thread(target=send_data_to_Nest.run, args=(path_to_files_sends,))
         th_receive.start()

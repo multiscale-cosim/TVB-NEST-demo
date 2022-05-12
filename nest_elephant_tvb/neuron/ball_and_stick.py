@@ -218,6 +218,9 @@ def run_example(co_simulation, path, nb_neurons, time_synch, resolution, simtime
                    list(range(len(stdspikes)))
                    )
         logger.info("save plot result")
+        np.save(path + "/neuron/data.npy", [np.array([times, node_id]).ravel(),
+                   times.tolist(), node_id.tolist(),
+                   list(range(len(stdspikes)))])
     else:
         plt.figure()
     plt.savefig(path + "/figures/plot_neuron.png")

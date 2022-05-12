@@ -7,10 +7,9 @@ from tvb.contrib.cosimulation.cosimulator import CoSimulator
 from tvb.contrib.cosimulation.cosim_monitors import CosimCoupling
 from nest_elephant_tvb.utils import create_logger
 import nest_elephant_tvb.tvb.wrapper_TVB_mpi as Wrapper
-numpy.random.seed(125)
 
 
-def configure(co_simulation, time_synch=0.1, id_nest_region=None, dt=0.1):
+def configure(co_simulation, time_synch=0.1, id_nest_region=None, dt=0.1, seed=0):
     """
     configure TVB before the simulation
     modify example of https://github.com/the-virtual-brain/tvb-root/blob/master/tvb_documentation/tutorials/tutorial_s1_region_simulation.ipynb
@@ -20,6 +19,7 @@ def configure(co_simulation, time_synch=0.1, id_nest_region=None, dt=0.1):
     :param dt: size fo the integration step
     :return:
     """
+    numpy.random.seed(seed)
     oscilator = lab.models.Generic2dOscillator()
     white_matter = lab.connectivity.Connectivity.from_file()
     white_matter.speed = numpy.array([4.0])
@@ -46,7 +46,7 @@ def configure(co_simulation, time_synch=0.1, id_nest_region=None, dt=0.1):
     return sim
 
 
-def run_example(co_simulation, path, time_synch=0.1, simtime=1000.0, level_log=1,id_nest_region=[0],dt=0.1):
+def run_example(co_simulation, path, time_synch=0.1, simtime=1000.0, level_log=1,id_nest_region=[0],dt=0.1, seed=0):
     """
     run the example for TVB
     :param co_simulation: boolean for checking if the co-simulation is active or not
@@ -61,7 +61,7 @@ def run_example(co_simulation, path, time_synch=0.1, simtime=1000.0, level_log=1
     """
     logger = create_logger(path, 'tvb', level_log)
     logger.info("configure the network")
-    simulator = configure(co_simulation, time_synch, id_nest_region,dt)
+    simulator = configure(co_simulation, time_synch, id_nest_region,dt,seed)
     simulator.simulation_length = simtime
 
     logger.info("start the simulation")
@@ -75,6 +75,8 @@ def run_example(co_simulation, path, time_synch=0.1, simtime=1000.0, level_log=1
     plt.plot(RAW[0], RAW[1][:, 0, :, 0] + 3.0)
     plt.title("Raw -- State variable 0")
     plt.savefig(path+"/figures/plot_tvb.png")
+    numpy.save(path + "/tvb/time.npy", RAW[0])
+    numpy.save(path + "/tvb/data.npy", RAW[1])
 
 
 if __name__ == "__main__":
@@ -98,7 +100,7 @@ if __name__ == "__main__":
         run_example(parameters['co_simulation'], parameters['path'], simtime=parameters['simulation_time'],
                     level_log=parameters['level_log'], dt=parameters['resolution'],
                     time_synch=parameters['time_synchronization'], id_nest_region=parameters['id_nest_region'])
-    elif len(sys.argv) == 6:  # run with parameter in command line
+    elif len(sys.argv) == 7:  # run with parameter in command line
         run_example(bool(int(sys.argv[1])), sys.argv[2], time_synch=float(sys.argv[3]),
-                    simtime=float(sys.argv[4]), level_log=int(sys.argv[5]))
+                    simtime=float(sys.argv[4]), level_log=int(sys.argv[5]), seed=int(sys.argv[6]))
 

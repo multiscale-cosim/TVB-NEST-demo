@@ -7,7 +7,7 @@ from nest_elephant_tvb.utils import create_logger
 
 def run_example(co_simulation, path="", simtime=100,
                 level_log=1, resolution=0.1,
-                time_synch=0.0, id_proxy=None):
+                time_synch=0.0, id_proxy=None, seed=0):
     logger = create_logger(path, "neurolib", level_log)
     logger.info("start ")
     if co_simulation:
@@ -17,15 +17,15 @@ def run_example(co_simulation, path="", simtime=100,
         logger.info("start chunksize : "+str(chunksize)+" "+str(time_synch)+" "+str(resolution))
 
     ds = Dataset("gw")
-    model = ALNModel(Cmat=ds.Cmat*2, Dmat=ds.Dmat, logger=logger)
+    model = ALNModel(Cmat=ds.Cmat*4.0, Dmat=ds.Dmat, logger=logger, seed=seed)
     model.params['duration'] = simtime  # in ms, simulates for 5 minutes
 
     model.params['mue_ext_mean'] = 1.57
     model.params['mui_ext_mean'] = 1.6
     # We set an appropriate level of noise
-    model.params['sigma_ou'] = 0.00
+    model.params['sigma_ou'] = 0.00 # 0.04
     # And turn on adaptation with a low value of spike-triggered adaptation currents.
-    model.params['b'] = 5.0
+    model.params['b'] = 100.0
 
 
     def coupling_function(params, init_vars, id_proxy, chunksize):
@@ -47,7 +47,7 @@ def run_example(co_simulation, path="", simtime=100,
     if co_simulation:
         model.run(chunkwise=True, append_outputs=True, chunksize=chunksize,
               mpi=co_simulation, coupling_function=coupling_function, id_proxy=id_proxy,
-              path_mpi_input=path_mpi_input , path_mpi_output=path_mpi_output)
+              path_mpi_input=path_mpi_input, path_mpi_output=path_mpi_output)
     else:
         model.run(append_outputs=True, mpi=co_simulation )
 
@@ -56,9 +56,13 @@ def run_example(co_simulation, path="", simtime=100,
     fig, axs = plt.subplots(1, 1, figsize=(20, 20), dpi=300)
     plt.plot(model.xr().time, model.xr().loc['rates_exc'].T)
     plt.savefig(path+"/figures/neurolib.png")
+    np.save(path+"/neurolib/time.npy", model.xr().time)
+    np.save(path+"/neurolib/data.npy", [model.xr().loc['rates_exc'].T, model.xr().loc['rates_inh'].T, model.xr().loc['IA']])
     logger.info("neurolib end"); sys.stdout.flush()
 
 if __name__ == "__main__":
+    import neurolib
+    print(neurolib.__file__)
     if len(sys.argv) == 2:
         import json
         with open(sys.argv[1]) as f:
@@ -66,10 +70,11 @@ if __name__ == "__main__":
             if parameters['co_simulation']:
                 run_example(parameters['co_simulation'], path=parameters['path'], simtime=parameters['simulation_time'],
                         level_log=parameters['level_log'], resolution=parameters['resolution'],
-                        time_synch=parameters['time_synchronization'], id_proxy=parameters['id_nest_region'])
+                        time_synch=parameters['time_synchronization'], id_proxy=parameters['id_nest_region'],
+                        seed=parameters['seed'])
             else:
                 run_example(parameters['co_simulation'], path=parameters['path'], simtime=parameters['simulation_time'],
-                        level_log=parameters['level_log'], resolution=parameters['resolution'],
+                        level_log=parameters['level_log'], resolution=parameters['resolution'], seed=parameters['seed']
                         )
     else:
         print('missing argument')
