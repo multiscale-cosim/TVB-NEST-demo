@@ -93,12 +93,6 @@ RUN cd /home/;\
 
 # Copy files of the project
 COPY  ./nest_elephant_tvb /home/nest_elephant_tvb
-COPY  ./analyse /home/nest_elephant_tvb/analyse
-COPY  ./parameter /home/nest_elephant_tvb/parameter
-
-# initialisation of special synapse for Neuron
-RUN cd /home/nest_elephant_tvb/analyse/LFPY;\
-    nrnivmodl
 
 # create python3 executable
 RUN ln -s /usr/local/bin/python3.8 /usr/local/bin/python3

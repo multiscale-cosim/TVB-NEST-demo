@@ -33,7 +33,7 @@ def configure(simulator, co_simulation, nb_neurons=10000):
     simulator.Connect(noise, nodes_ex, syn_spec="excitatory")
     simulator.Connect(noise, nodes_in, syn_spec="excitatory")
     simulator.Connect(nodes_ex[:50], espikes, syn_spec="excitatory")
-    simulator.Connect(nodes_in[:50], ispikes, syn_spec="excitatory")
+    simulator.Connect(nodes_in[:25], ispikes, syn_spec="excitatory")
     conn_params_ex = {'rule': 'fixed_indegree', 'indegree': 10}
     conn_params_in = {'rule': 'fixed_indegree', 'indegree': 2}
     simulator.Connect(nodes_ex, nodes_ex + nodes_in, conn_params_ex, "excitatory")
