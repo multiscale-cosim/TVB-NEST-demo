@@ -22,7 +22,7 @@ class ThreadCommunication(CommunicationInternAbstract):
     # https://hackernoon.com/synchronization-primitives-in-python-564f89fee732
 
     def __init__(self, logger=None,
-                 buffer_write_shape=None, buffer_write_type=np.float, buffer_write_status=None,
+                 buffer_write_shape=None, buffer_write_type=float, buffer_write_status=None,
                  buffer_read=None, status_read=None, lock_read=None):
         """
         initialisation of the thread
